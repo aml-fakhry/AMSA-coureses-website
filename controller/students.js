@@ -178,9 +178,26 @@ router.post('/allStudentsPg', function(req, res) {
     });
 });
 
+// get byId
 router.post("/getStudentById", (req, res) => {
     let studentId =req.body.id
     Students.find({_id : studentId}).populate({path:'courses',select:'name -_id'})
+   .then(student=>{
+       console.log(student);
+       res.status(200).json(student);
+   }).catch(err => {
+       console.log(err);
+       res.status(500).json({
+       message: 'NotDataFound'
+       });
+   })
+})
+
+
+router.get("/getStudentByLasetYear", (req, res) => {
+   
+    Students.find({ "date": {$gt:new Date(Date.now() - 24*60*60 * 1000)}})
+    .populate({path:'courses',select:'name -_id'})
    .then(student=>{
        console.log(student);
        res.status(200).json(student);
