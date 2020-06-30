@@ -229,10 +229,13 @@ router.get("/highestLearners", (req, res) => {
 router.post('/getAllCourseReviewes', function(req, res, next) {
     coursId = req.body.id
     Courses.findOne({_id:coursId}).populate({path:'reviews'})
-        .then(courses=>{
-          console.log(courses);
-        
-             res.status(200).json(courses)  
+        .then(course=>{
+        //   console.log(courses);
+        let reviews = course.reviews.filter(r=>{
+            return r.visibility == true
+        })
+        // console.log(reviews);
+             res.status(200).json(reviews)  
             }).catch(err => {
                 console.log(err);
                 res.status(500).json({
