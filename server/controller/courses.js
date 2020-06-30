@@ -204,6 +204,27 @@ router.post('/getCourseById', function(req, res, next) {
     }); 
 });
 
+
+// /////////////////////////// get highest learners num. in courses
+router.get("/highestLearners", (req, res) => {
+    Courses.aggregate([{ $unwind: "$learners" },
+    { $group : { _id : "$name", numOfStudent : { $sum : 1 } } }])
+    .then(courses=>{
+        let maxCourseNumOfLearners=courses.reduce(function(prev, current) {
+            return (prev.numOfStudent > current.numOfStudent) ? prev : current 
+        })
+        console.log(maxCourseNumOfLearners)
+        let highestCourseName=maxCourseNumOfLearners._id;
+        let highestNumOfLearners=maxCourseNumOfLearners.numOfStudent;
+        res.status(201).json(highestNumOfLearners)   
+    }).catch(err => {
+        console.log(err);
+        res.status(500).json({
+        message: 'oooops something went wrong with courses'
+        });
+    })
+})
+
 // Route to get course's reviews by id "visibility=true only" [courses collection]
 router.post('/getAllCourseReviewes', function(req, res, next) {
     coursId = req.body.id
