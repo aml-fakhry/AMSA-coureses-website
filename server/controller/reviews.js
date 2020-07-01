@@ -1,10 +1,8 @@
 const express = require("express");
 const router = express.Router();
-const mongoose=require('mongoose');
 
 const Reviews = require("../models/reviews");
 const Courses = require("../models/courses");
-const reviews = require("../models/reviews");
 
 router.post("/addRevieww", (req, res, next) => {
     const today = new Date();

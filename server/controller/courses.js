@@ -5,6 +5,8 @@ const branches = require("../models/branches");
 const Cities = require("../models/cities");
 const Reviews = require("../models/reviews");
 const categories = require("../models/categories");
+const students = require("../models/students");
+const courses = require("../models/courses");
 
 const router = express.Router();
   
@@ -243,5 +245,107 @@ router.post('/getAllCourseReviewes', function(req, res, next) {
 });
 
 
+// /////////////////////////// Enroll to a course
+router.get("/enroll", (req, res) => {
+    let {studentId , courseId}=req.query
+    
+    students.findOne({ _id:studentId}).then((student)=>{
+    const isCourseThere=student.courses.includes(courseId)
+    console.log(student+'>>>'+isCourseThere);
+    if(isCourseThere) res.status(500).json('you had enrolled to this already')
+        else {
+            Courses.findOne({ _id:courseId}).then(course=>{
+                    const isStudentErnolled=course.learners.includes(studentId)
+                console.log(isStudentErnolled+'---');
+                if (isStudentErnolled) res.status(500).json('you had enrolled to this already')
+                else
+            students.findOneAndUpdate({ _id:studentId},
+                { "$push": {
+                    "courses": courseId
+                }},{new: true ,useFindAndModify: false}
+            ).then(()=>{
+                Courses.findOneAndUpdate({ _id:courseId},
+                { "$push": {
+                    "learners": studentId
+                }},{new: true ,useFindAndModify: false}
+                ).then(()=>{
+                    res.status(500).json('enroll done')
+                })
+                
+            })
+            
+            })
+        }
+    }).catch(err => {
+                console.log(err);
+                res.status(500).json({
+                message: 'NoDataFound'
+                });
+            })
+})
+
+router.get("/enrol", (req, res) => {
+    let {studentId , courseId}=req.query
+    const updateStudent=students.findOneAndUpdate({ _id:studentId},
+        { "$push": {
+            "courses": courseId
+        }},{new: true ,useFindAndModify: false}
+    )
+    const updateCourse= Courses.findOneAndUpdate({ _id:courseId},
+        { "$push": {
+            "learners": studentId
+        }},{new: true ,useFindAndModify: false}
+        )
+    Promise.all([updateStudent,updateCourse]).then(result=>{
+        console.log(result);
+        
+        res.status(500).json('enroll done')
+    }).catch(err => {
+                console.log(err);
+                res.status(500).json({
+                message: 'NoDataFound'
+                });
+            })
+    
+        
+})
+/* router.get("/enrol", (req, res) => {
+    let {studentId , courseId}=req.query
+    Courses.findOne({ _id:courseId}).then(course=>{
+        const isStudentErnolled=course.learners.includes(studentId)
+    console.log(isStudentErnolled+' -st');
+    if (isStudentErnolled) res.status(500).json('you had enrolled to this already')
+    else {
+        students.findOne({_id:studentId}).then(student=>{
+            const isStudentErnolled=student.courses.includes(courseId)
+            if (isStudentErnolled) res.status(500).json('you had enrolled to this already')
+            else {
+            const updateStudent=students.findOneAndUpdate({ _id:studentId},
+                { "$push": {
+                    "courses": courseId
+                }},{new: true ,useFindAndModify: false}
+            )
+            const updateCourse= Courses.findOneAndUpdate({ _id:courseId},
+                { "$push": {
+                    "learners": studentId
+                }},{new: true ,useFindAndModify: false}
+                )
+            Promise.all([updateStudent,updateCourse]).then(result=>{
+                console.log(result);
+                
+                res.status(500).json('enroll done')
+            }).catch(err => {
+                        console.log(err);
+                        res.status(500).json({
+                        message: 'NoDataFound'
+                        });
+                    })
+                }
+        })
+    }
+    })   
+    
+        
+}) */
 module.exports = router;
 
