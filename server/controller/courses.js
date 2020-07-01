@@ -230,11 +230,9 @@ router.post('/getAllCourseReviewes', function(req, res, next) {
     coursId = req.body.id
     Courses.findOne({_id:coursId}).populate({path:'reviews'})
         .then(course=>{
-        //   console.log(courses);
         let reviews = course.reviews.filter(r=>{
             return r.visibility == true
         })
-        // console.log(reviews);
              res.status(200).json(reviews)  
             }).catch(err => {
                 console.log(err);
@@ -243,5 +241,7 @@ router.post('/getAllCourseReviewes', function(req, res, next) {
                 });
             })
 });
+
+
 module.exports = router;
 

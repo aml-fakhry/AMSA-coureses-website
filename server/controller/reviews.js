@@ -3,6 +3,7 @@ const router = express.Router();
 
 const Reviews = require("../models/reviews");
 const Courses = require("../models/courses");
+const reviews = require("../models/reviews");
 
 router.post("/addRevieww", (req, res, next) => {
     const today = new Date();
@@ -33,5 +34,18 @@ router.post("/addRevieww", (req, res, next) => {
    });
   });
 
+
+// //////// soft delete review
+router.get("/delete/:id", (req, res) => {
+    Reviews.findOneAndUpdate({_id: req.params.id},{visibility: false},
+        {new: true ,useFindAndModify: false}).then(review=>{
+        res.status(200).json(review);
+    }).catch(err => {
+        console.log(err);
+        res.status(500).json({
+        message: 'Data Not Found'
+        });
+    })
+})
 
 module.exports = router;
