@@ -36,6 +36,7 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(router);
 app.use("/public", express.static(path.join("public")));
 
+// Initiate Mongo Server
 
 
 app.use((req, res, next) => {
