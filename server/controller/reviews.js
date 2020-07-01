@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const mongoose=require('mongoose');
 
 const Reviews = require("../models/reviews");
 const Courses = require("../models/courses");
@@ -38,8 +39,8 @@ router.post("/addRevieww", (req, res, next) => {
 // //////// soft delete review
 router.get("/delete/:id", (req, res) => {
     Reviews.findOneAndUpdate({_id: req.params.id},{visibility: false},
-        {new: true ,useFindAndModify: false}).then(review=>{
-        res.status(200).json(review);
+        {new: true ,useFindAndModify: false}).then(deletedReview=>{
+        res.status(200).json({massege:`you've deleted ${deletedReview.reviewComment} review`});
     }).catch(err => {
         console.log(err);
         res.status(500).json({
@@ -48,4 +49,27 @@ router.get("/delete/:id", (req, res) => {
     })
 })
 
+// Route to update review 
+router.post('/update/:id', (req,res)=>{ 
+    const { reviewComment, reviewRate, student , course } = req.body
+    Reviews.findOne({_id:req.params.id}).then(reviewToUpdate=>{
+        var reviewToUpdate = new Reviews({
+            reviewComment: req.body.reviewComment,
+          reviewRate: req.body.reviewRate,
+          student: req.body.student,
+          course : req.body.course,
+          created: new Date(),
+        });
+        Reviews.updateOne({_id: req.params.id},[{$set:reviewToUpdate},{$unset:['_id','__v']}]).then(updatedReview=>{
+            console.log(updatedReview);            
+            res.status(200).json(reviewToUpdate);
+        }).catch(err => {
+            console.log(err);
+            res.status(500).json({
+            message: 'Data Not Found'
+            });
+        })
+    })
+
+});
 module.exports = router;
