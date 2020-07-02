@@ -3,9 +3,11 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const { check, validationResult } = require('express-validator');
-const auth = require('../middleware/auth')
+const auth = require('../middleware/auth');
 const Students = require('../models/students');
+const Courses = require('../models/courses');
 
+// token register
 router.post(
   '/register',
   [
@@ -70,7 +72,7 @@ router.post(
     }
   }
 );
-
+// token login
 router.post(
   '/login',
   [
@@ -103,7 +105,7 @@ router.post(
         return res.status(400).json({
           message: 'Incorrect Password !',
         });
-console.log(student._id);
+      console.log(student._id);
 
       const payload = {
         student: {
@@ -133,18 +135,18 @@ console.log(student._id);
   }
 );
 
-router.post("/Logined", auth, async (req, res) => {
+// logined student
+router.post('/Logined', auth, async (req, res) => {
   try {
-
     //is getting fetched from Middleware after token authentication
-    const student = await Students.findById({_id:req.body.id});
+    const student = await Students.findById({ _id: req.body.id });
     res.status(200).json(student);
   } catch (e) {
-    res.status(500).send({ message: "Error in Fetching user" });
+    res.status(500).send({ message: 'Error in Fetching user' });
   }
 });
 
-
+// get allStudent
 router.get('/allStudents', (req, res) => {
   Students.find({}, function (err, data) {
     if (err) {
@@ -204,7 +206,7 @@ router.post('/getStudentById', (req, res) => {
       });
     });
 });
-
+// last student registered
 router.get('/getStudentByLasetYear', (req, res) => {
   Students.find({ date: { $gt: new Date(Date.now() - 24 * 60 * 60 * 1000) } })
     .populate({ path: 'courses', select: 'name -_id' })
@@ -216,6 +218,47 @@ router.get('/getStudentByLasetYear', (req, res) => {
       console.log(err);
       res.status(500).json({
         message: 'NotDataFound',
+      });
+    });
+});
+
+router.get('/enrollCourse', (req, res) => {
+  let { studentId, courseId } = req.query;
+
+  Students.findOne({ _id: studentId })
+    .then((student) => {
+      const isCourseThere = student.courses.includes(courseId);
+      console.log(isCourseThere);
+      if (!isCourseThere) {
+        Students.findOneAndUpdate(
+          { _id: studentId },
+          {
+            $push: {
+              courses: courseId,
+            },
+          }
+        ).populate({path:'courses'})
+        .then((result) => {
+          res.json(200, result)
+        });
+
+        Courses.findOneAndUpdate(
+          { _id: courseId },
+          {
+            $push: {
+              learners: studentId,
+            },
+          }
+        ).populate({path:'learners'}).then((result) => {
+          res.json(200, result)
+        });
+      } else {
+        res.status(500).json({message:' already enrolled this course'});
+      }
+    })
+    .catch((err) => {
+      res.status(500).json({
+        message: 'NoDataFound',
       });
     });
 });

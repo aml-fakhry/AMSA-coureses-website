@@ -6,7 +6,7 @@ const Cities = require("../models/cities");
 const Reviews = require("../models/reviews");
 const categories = require("../models/categories");
 const students = require("../models/students");
-const courses = require("../models/courses");
+
 
 const router = express.Router();
   
@@ -42,7 +42,7 @@ router.post("/add", (req, res , next) => {
     })
 })
 
-// /////////////////////////// get all courses
+//  get all courses
 
 router.get("/list", (req, res ) => {
     Courses.find().populate({path:'category',select:'name -_id'}).then(courses=>{
@@ -80,7 +80,7 @@ router.post('/allCoursesPg', function(req, res) {
         res.json(response);
     });
 });
-// /////////////////////////// get course by city
+//  get course by city
 router.get("/ListByCity/:id", (req, res) => {
     let cityName;
     Cities.findOne({_id:req.params.id}).select('name -_id').then((city)=>{
@@ -102,8 +102,7 @@ router.get("/ListByCity/:id", (req, res) => {
     })
 })
 
-
-// /////////////////////////// get course by branch
+// get course by branch
 router.get("/ListByBranch/:id", (req, res) => {
     var selectedBranch;
     branches.findOne({_id:req.params.id}).select('name -_id').then(branch=>{
@@ -123,7 +122,7 @@ router.get("/ListByBranch/:id", (req, res) => {
     })  
 })
 
-// /////////////////////////// get online courses
+//  get online courses
 router.get("/online", (req, res ) => {
         Courses.find({type:'online'}).populate({path:'category',select:'name -_id'})
         .then(courses=>{
@@ -138,7 +137,7 @@ router.get("/online", (req, res ) => {
       
 })
 
-// /////////////////////////// get offline courses
+//  get offline courses
 router.get("/offline", (req, res ) => {
     Courses.find({type: { $ne:'online' }}).populate({path:'category',select:'name -_id'})
     .then(courses=>{
@@ -207,7 +206,7 @@ router.post('/getCourseById', function(req, res, next) {
 });
 
 
-// /////////////////////////// get highest learners num. in courses
+//  get highest learners num. in courses
 router.get("/highestLearners", (req, res) => {
     Courses.aggregate([{ $unwind: "$learners" },
     { $group : { _id : "$name", numOfStudent : { $sum : 1 } } }])
@@ -245,107 +244,6 @@ router.post('/getAllCourseReviewes', function(req, res, next) {
 });
 
 
-// /////////////////////////// Enroll to a course
-router.get("/enroll", (req, res) => {
-    let {studentId , courseId}=req.query
-    
-    students.findOne({ _id:studentId}).then((student)=>{
-    const isCourseThere=student.courses.includes(courseId)
-    console.log(student+'>>>'+isCourseThere);
-    if(isCourseThere) res.status(500).json('you had enrolled to this already')
-        else {
-            Courses.findOne({ _id:courseId}).then(course=>{
-                    const isStudentErnolled=course.learners.includes(studentId)
-                console.log(isStudentErnolled+'---');
-                if (isStudentErnolled) res.status(500).json('you had enrolled to this already')
-                else
-            students.findOneAndUpdate({ _id:studentId},
-                { "$push": {
-                    "courses": courseId
-                }},{new: true ,useFindAndModify: false}
-            ).then(()=>{
-                Courses.findOneAndUpdate({ _id:courseId},
-                { "$push": {
-                    "learners": studentId
-                }},{new: true ,useFindAndModify: false}
-                ).then(()=>{
-                    res.status(500).json('enroll done')
-                })
-                
-            })
-            
-            })
-        }
-    }).catch(err => {
-                console.log(err);
-                res.status(500).json({
-                message: 'NoDataFound'
-                });
-            })
-})
 
-router.get("/enrol", (req, res) => {
-    let {studentId , courseId}=req.query
-    const updateStudent=students.findOneAndUpdate({ _id:studentId},
-        { "$push": {
-            "courses": courseId
-        }},{new: true ,useFindAndModify: false}
-    )
-    const updateCourse= Courses.findOneAndUpdate({ _id:courseId},
-        { "$push": {
-            "learners": studentId
-        }},{new: true ,useFindAndModify: false}
-        )
-    Promise.all([updateStudent,updateCourse]).then(result=>{
-        console.log(result);
-        
-        res.status(500).json('enroll done')
-    }).catch(err => {
-                console.log(err);
-                res.status(500).json({
-                message: 'NoDataFound'
-                });
-            })
-    
-        
-})
-/* router.get("/enrol", (req, res) => {
-    let {studentId , courseId}=req.query
-    Courses.findOne({ _id:courseId}).then(course=>{
-        const isStudentErnolled=course.learners.includes(studentId)
-    console.log(isStudentErnolled+' -st');
-    if (isStudentErnolled) res.status(500).json('you had enrolled to this already')
-    else {
-        students.findOne({_id:studentId}).then(student=>{
-            const isStudentErnolled=student.courses.includes(courseId)
-            if (isStudentErnolled) res.status(500).json('you had enrolled to this already')
-            else {
-            const updateStudent=students.findOneAndUpdate({ _id:studentId},
-                { "$push": {
-                    "courses": courseId
-                }},{new: true ,useFindAndModify: false}
-            )
-            const updateCourse= Courses.findOneAndUpdate({ _id:courseId},
-                { "$push": {
-                    "learners": studentId
-                }},{new: true ,useFindAndModify: false}
-                )
-            Promise.all([updateStudent,updateCourse]).then(result=>{
-                console.log(result);
-                
-                res.status(500).json('enroll done')
-            }).catch(err => {
-                        console.log(err);
-                        res.status(500).json({
-                        message: 'NoDataFound'
-                        });
-                    })
-                }
-        })
-    }
-    })   
-    
-        
-}) */
 module.exports = router;
 
