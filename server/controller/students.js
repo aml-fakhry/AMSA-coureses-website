@@ -262,4 +262,37 @@ router.get('/enrollCourse', (req, res) => {
       });
     });
 });
+
+// /////////////////////////// Enroll to a course
+router.get("/enroll", (req, res) => {
+  let {studentId , courseId}=req.query
+
+  Students.findOne({ _id:studentId}).then((student)=>{
+  const isCourseThere=student.courses.includes(courseId)
+  // console.log(student+'>>>'+isCourseThere);
+  if(isCourseThere) res.status(500).json('you had enrolled to this already')
+  else {
+      const updateStudent=Students.findOneAndUpdate({ _id:studentId},
+          { "$push": {
+              "courses": courseId
+          }},{new: true ,useFindAndModify: false}
+      )
+      const updateCourse= Courses.findOneAndUpdate({ _id:courseId},
+          { "$push": {
+              "learners": studentId
+          }},{new: true ,useFindAndModify: false}
+          )
+      Promise.all([updateStudent,updateCourse]).then(result=>{
+          console.log(result);
+          res.status(500).json('enroll done')
+      }).catch(err => {
+          // console.log(err);
+          res.status(500).json({
+          message: err
+          });
+      }) 
+      
+  }
+  })
+})
 module.exports = router;
