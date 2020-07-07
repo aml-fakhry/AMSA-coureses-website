@@ -20,16 +20,16 @@ describe('AppComponent', () => {
     expect(app).toBeTruthy();
   });
 
-  it(`should have as title 'angular-example-with-routing'`, () => {
+  it(`should have as title 'AMSA courses website'`, () => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance;
-    expect(app.title).toEqual('angular-example-with-routing');
+    expect(app.title).toEqual('AMSA courses website');
   });
 
   it('should render title', () => {
     const fixture = TestBed.createComponent(AppComponent);
     fixture.detectChanges();
     const compiled = fixture.nativeElement;
-    expect(compiled.querySelector('.content span').textContent).toContain('angular-example-with-routing app is running!');
+    expect(compiled.querySelector('.content span').textContent).toContain('AMSA courses website app is running!');
   });
 });
