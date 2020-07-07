@@ -226,7 +226,7 @@ router.get("/highestLearners", (req, res) => {
     })
 })
 
-// Route to get course's reviews by id "visibility=true only" [courses collection]
+// Route to get course's reviews by id "visibility=true only"
 router.post('/getAllCourseReviewes', function(req, res, next) {
     coursId = req.body.id
     Courses.findOne({_id:coursId}).populate({path:'reviews'})

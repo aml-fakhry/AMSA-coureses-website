@@ -52,10 +52,10 @@ router.post('/update/:id', (req,res)=>{
     const { reviewComment, reviewRate, student , course } = req.body
     Reviews.findOne({_id:req.params.id}).then(reviewToUpdate=>{
         var reviewToUpdate = new Reviews({
-            reviewComment: req.body.reviewComment,
-          reviewRate: req.body.reviewRate,
-          student: req.body.student,
-          course : req.body.course,
+            reviewComment: reviewComment,
+          reviewRate: reviewRate,
+          student: student,
+          course : course,
           created: new Date(),
         });
         Reviews.updateOne({_id: req.params.id},[{$set:reviewToUpdate},{$unset:['_id','__v']}]).then(updatedReview=>{
@@ -64,7 +64,7 @@ router.post('/update/:id', (req,res)=>{
         }).catch(err => {
             console.log(err);
             res.status(500).json({
-            message: 'Data Not Found'
+            message: err
             });
         })
     })
